@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+    <title>Web AppBuilder for ArcGIS</title>
+    <link rel="shortcut icon" href="builder/images/shortcut.png">
+  </head>
+  <body class="claro">
+  
+  <script src="./loader.js"></script>
+  <!--<script src="http://lzz-pc.chn.esri.com/arcgis/apps/webappbuilder/Bodhi/src/roots/jquery.js"></script>-->
+  <script>
+		//$.log = function(m) {
+			//console.log(m);
+		//}
+  window.something = "Bodhi";
+  require.config({
+	baseUrl: "./",
+	packages: [{
+		name: "more",
+		location: "./more"
+	}, {
+		name: "mass",
+		location: "../"
+	}, {
+		name: "wab",
+		location: "../../../"
+	}],
+	shim: {
+		"something": {
+			"deps": ['jquery'],
+			exports: 'something',
+			init: function(jq, ol) {
+				console.log(jq);
+				console.log($);
+				return something + " in shim";
+			}
+		}
+	},
+	map: {
+		'*': {
+			'jquery': 'jquery-private'
+		},
+		'jquery-private': {
+			'jquery': 'jquery'
+		}
+	},
+	paths: {
+		'jquery': "../../Bodhi/src/roots/jquery"
+	}
+  });
+  require([
+  'bbb',
+  //'aaa.bbb.ccc',
+  //'ccc',
+  //'ddd',
+  //'fff',
+  'something'
+  ], function(aaabbbccc){
+	console.log('simple loader');
+	console.log(arguments);
+  });
+  </script>
+  </body>
+</html>
