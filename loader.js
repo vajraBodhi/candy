@@ -1,8 +1,9 @@
 (function(global){
 	global = global || window;
-	modules = {};
-	loadings = [];
-	loadedJs = [];
+	var modules = {};
+	var loadings = [];
+	var loadedJs = [];
+	var hasCircleReferece = false;
 	//module: id, state, factory, result, deps;
 	global.require = function(deps, callback, parent){
 		var id = parent || "Bodhi" + Date.now();
@@ -39,8 +40,10 @@
 		modules[id] = module;
 		
 		if (checkCircleRef(id, id)) {
+			hasCircleReferece = true;
 			return;
 		}
+		//checkCircleRef(id, id)
 		
 		deps.forEach(function(dep, i) {
 			if (modules[dep] && modules[dep].state === 2) {
@@ -124,9 +127,9 @@
 		}
 		var id = id || getCurrentScript();
 		
-		var script = document.querySelector('script[src="' + id + '"]');
-		if (script || id in require.parsedConfig.shim) {
-			var mId = script ? script.getAttribute('data-moduleId') : id;
+		var mId = getModuleId(id);
+		if (mId || id in require.parsedConfig.shim) {
+			mId = mId ? mId : id;
 			var maping = getMapSetting(mId);
 			
 			if (maping) {
@@ -139,10 +142,21 @@
 			console.error('multiple define module: ' + id);
 		}
 		
-		require(deps, callback, id);
+		if (!hasCircleReferece) {
+			require(deps, callback, id);
+		}
 	};
 	
 	global.define.amd = {};//AMD规范
+	
+	function getModuleId(url) {
+		var script = document.querySelector('script[src="' + url + '"]');
+		if (script) {
+			return script.getAttribute('data-moduleId');
+		} else {
+			return null;
+		}
+	};
 	
 	function getMapSetting(mId) {
 		if (mId in require.parsedConfig.map) {
@@ -184,8 +198,6 @@
 				return checkCircleRef(dep, target);
 			});
 		});
-		
-		//return hasCr ? true: 
 	};
 	
 	function getRoute(base, target) {
@@ -236,6 +248,9 @@
 		//判断模块是否在paths中定义了路径
 		script.src = (url in global.require.parsedConfig.paths ? global.require.parsedConfig.paths[url] : url) + '.js';
 		script.onload = function() {
+			if (hasCircleReferece) {
+				return;
+			}
 			var module = modules[url];
 			if (module && isReady(module) && loadings.indexOf(url) > -1) {
 				callFactory(module);
